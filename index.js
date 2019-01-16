@@ -4,6 +4,7 @@ const Alexa = require('alexa-sdk');
 const WebSocket = require('ws');
 const websocketserverurl = 'ws://54.180.21.15:15234/';
 
+
 const handlers = {
     'LaunchRequest': function () {
         console.log(`######LanchRequest######`);
@@ -15,10 +16,20 @@ const handlers = {
         console.log(`#####ppt-open######`);
         let ws = new WebSocket(websocketserverurl);
 		ws.on('open', function open() {
-			ws.send('open');
-			ws.close();
-			this.emit(':tell',`okay! go open!`);
+            ws.send('open');
+            //여기서 메시지도 받을수있나 테스트 해봐야함
         });
+
+        ws.on('message',function message(message){
+            
+            if(message.indexOf('PING')==-1){
+            ws.close();
+            this.emit(':tell',message);
+            }
+        }.bind(this));
+
+      
+       
     },
     
 
@@ -28,9 +39,16 @@ const handlers = {
         let ws = new WebSocket(websocketserverurl);
 		ws.on('open', function open() {
 			ws.send('close');
-			ws.close();
-			this.emit(':tell',`okay! go stop!`);
         });
+
+
+        ws.on('message',function message(message){
+            if(message.indexOf('PING')==-1){
+            ws.close();
+            this.emit(':tell',message);
+            }
+        }.bind(this));
+        
     },
 
     'pptnextslide': function () {
@@ -38,21 +56,30 @@ const handlers = {
 		let ws = new WebSocket(websocketserverurl);
 		ws.on('open', function open() {
 			ws.send('next');
-			ws.close();
-			this.emit(':tell',`okay! go next!`);
+		
         });
+        ws.on('message',function message(message){
+            if(message.indexOf('PING')==-1){
+            ws.close();
+            this.emit(':tell',message);
+            }
+        }.bind(this));
         
     },
+
 	'pptprevslide': function () {
 	
         console.log(`######pptprevslide######`);
 		let ws = new WebSocket(websocketserverurl);
 		ws.on('open', function open() {
 			ws.send('previous');
-			ws.close();
-			this.emit(':tell',`okay! go prev!`);
         });		
-        
+        ws.on('message',function message(message){
+            if(message.indexOf('PING')==-1){
+                ws.close();
+                this.emit(':tell',message);
+            }
+        }.bind(this));
     },
 
 	'ppttoslide': function () {
@@ -62,25 +89,27 @@ const handlers = {
         let ws = new WebSocket(websocketserverurl);
 		ws.on('open', function open() {
 			ws.send('slide=' + sn);
-			ws.close();
-			this.emit(':tell',`okay! goto number `+sn);
-		});
+        });
+        ws.on('message',function message(message){
+            if(message.indexOf('PING')==-1){
+            ws.close();
+            this.emit(':tell',message);
+            }
+        }.bind(this));
     },
 
     'AMAZON.FallbackIntent': function () {
         console.log(`@@@fallbackintent@@@`);
         this.emit(':tell',`I didn't understand! say again!`);
-
     },
 
     'Unhandled': function () {
         console.log(`@@@UnHandeld@@@ Let's call stop intent`);
-
     },
     
     'SessionEndedRequest': function () {
         console.log(`######sessionend######`);
-     //   this.emit(':tell',`session end!`);
+        this.emit(':tell',`session end!`);
     },
     
 };
